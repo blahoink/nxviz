@@ -486,6 +486,8 @@ class CircosPlot(BasePlot):
     Accepts the following additional arguments apart from the ones in
     `BasePlot`:
 
+    :param node_label_field: The node attribute on which to specify the label of nodes.
+    :type node_label_field: `string`
     :param node_label_layout: which/whether (a) node layout is used,
         either 'rotation', 'numbers' or None
     :type node_label_layout: `string`
@@ -500,6 +502,14 @@ class CircosPlot(BasePlot):
 
         # A CircosPlot only makes sense for at least 3 nodes
         assert len(graph.nodes) >= 3
+
+        # Node label field is specified in the node_label_field argument
+        node_label_field = kwargs.pop("node_label_field", None)
+        # Verify that the provided input is legitimate
+        # ...
+        # Store the node label field
+        self.node_label_field = node_label_field
+
         # Node labels are specified in the node_label_layout argument
         specified_layout = kwargs.pop("node_label_layout", None)
         # Verify that the provided input is legitimate
@@ -728,6 +738,10 @@ class CircosPlot(BasePlot):
             )
             self.ax.add_patch(node_patch)
             if self.node_labels:
+                if self.node_label_field:
+                    label_text = self.graph.node[node][self.node_label_field]
+                else:
+                    label_text = str(node)
                 label_x = self.node_label_coords["x"][i]
                 label_y = self.node_label_coords["y"][i]
                 label_tx = self.node_label_coords["tx"][i]
@@ -741,7 +755,7 @@ class CircosPlot(BasePlot):
                     rot = self.node_label_rotation[i]
 
                     self.ax.text(
-                        s=node,
+                        s=label_text,
                         x=label_x,
                         y=label_y,
                         ha=label_ha,
@@ -758,7 +772,7 @@ class CircosPlot(BasePlot):
                 elif self.node_label_layout == "numbers":
 
                     # Draw descriptions for labels
-                    desc = "%s - %s" % ((i, node) if (x > 0) else (node, i))
+                    desc = "%s - %s" % ((i, label_text) if (x > 0) else (label_text, i))
                     self.ax.text(
                         s=desc,
                         x=label_tx,
@@ -780,7 +794,7 @@ class CircosPlot(BasePlot):
 
                     # Draw node text straight from the nodes
                     self.ax.text(
-                        s=node,
+                        s=label_text,
                         x=label_x,
                         y=label_y,
                         ha=label_ha,
